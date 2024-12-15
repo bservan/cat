@@ -315,17 +315,17 @@ static void cat_process_file(struct cat_app_context *ctx, FILE *fp) {
             }
         } else if (ctx->option_enabled[CAT_OPTION_PRINT_LINENUM]) {
             if (blank_line_repeated <= 1) {
-        if (line_continued) {
-            fprintf(stdout, "%s", ctx->buffer);
-        } else {
-            fprintf(stdout, format, CAT_LINENO_ADJUST, linenum, ctx->buffer);
-        }
-        if (ctx->buffer[buf_len - 1] == '\n') {
-            linenum++;
-            line_continued = 0;
-        } else {
-            line_continued = 1;
-        }
+                if (line_continued) {
+                    fprintf(stdout, "%s", ctx->buffer);
+                } else {
+                    fprintf(stdout, format, CAT_LINENO_ADJUST, linenum, ctx->buffer);
+                }
+                if (ctx->buffer[buf_len - 1] == '\n') {
+                    linenum++;
+                    line_continued = 0;
+                } else {
+                    line_continued = 1;
+                }
             }
         } else {
             if (blank_line_repeated <= 1) {
