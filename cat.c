@@ -11,7 +11,7 @@
 #define CAT_LINENO_ADJUST            6
 #define CAT_LINENO_ADJUST_LONGOPT    24
 #define CAT_PROGRAME                 "cat"
-#define CAT_VERSION                  "0.0.1"
+#define CAT_VERSION                  "0.0.2"
 
 enum cat_command_option_enum {
     CAT_OPTION_HELP,
@@ -278,6 +278,7 @@ static void cat_process_files(struct cat_app_context *ctx) {
 static void cat_process_file(struct cat_app_context *ctx, FILE *fp) {
     int linenum = 1;
     int blank_line_repeated = 0;
+    int line_continued = 0;
     char *format = "%s";
 
     if (ctx->option_enabled[CAT_OPTION_PRINT_LINENUM] ||
@@ -286,17 +287,27 @@ static void cat_process_file(struct cat_app_context *ctx, FILE *fp) {
     }
 
     while (fgets(ctx->buffer, CAT_BUFSIZE, fp)) {
+        size_t buf_len = strlen(ctx->buffer);
         if (ctx->option_enabled[CAT_OPTION_SQUEEZE_BLANK]) {
-            if (strlen(ctx->buffer) > 1) {
+            if (buf_len > 1) {
                 blank_line_repeated = 0;
             } else {
                 blank_line_repeated++;
             }
         }
         if (ctx->option_enabled[CAT_OPTION_PRINT_LINENUM_NONBLANK]) {
-            if (strlen(ctx->buffer) > 1) {
-                fprintf(stdout, format, CAT_LINENO_ADJUST, linenum, ctx->buffer);
-                linenum++;
+            if (buf_len > 1) {
+                if (line_continued) {
+                    fprintf(stdout, "%s", ctx->buffer);
+                } else {
+                    fprintf(stdout, format, CAT_LINENO_ADJUST, linenum, ctx->buffer);
+                }
+                if (ctx->buffer[buf_len - 1] == '\n') {
+                    linenum++;
+                    line_continued = 0;
+                } else {
+                    line_continued = 1;
+                }
             } else {
                 if (blank_line_repeated <= 1) {
                     fprintf(stdout, "%s", ctx->buffer);
@@ -304,8 +315,17 @@ static void cat_process_file(struct cat_app_context *ctx, FILE *fp) {
             }
         } else if (ctx->option_enabled[CAT_OPTION_PRINT_LINENUM]) {
             if (blank_line_repeated <= 1) {
-                fprintf(stdout, format, CAT_LINENO_ADJUST, linenum, ctx->buffer);
-                linenum++;
+        if (line_continued) {
+            fprintf(stdout, "%s", ctx->buffer);
+        } else {
+            fprintf(stdout, format, CAT_LINENO_ADJUST, linenum, ctx->buffer);
+        }
+        if (ctx->buffer[buf_len - 1] == '\n') {
+            linenum++;
+            line_continued = 0;
+        } else {
+            line_continued = 1;
+        }
             }
         } else {
             if (blank_line_repeated <= 1) {
