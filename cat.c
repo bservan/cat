@@ -10,8 +10,8 @@
 #define CAT_BUFSIZE                  1024
 #define CAT_LINENO_ADJUST            6
 #define CAT_LINENO_ADJUST_LONGOPT    24
-#define CAT_PROGRAME                 "cat"
-#define CAT_VERSION                  "0.0.2"
+#define CAT_PROGNAME                 "cat"
+#define CAT_VERSION                  "0.0.3"
 
 enum cat_command_option_enum {
     CAT_OPTION_HELP,
@@ -131,7 +131,7 @@ void cat_app_context_destroy(struct cat_app_context *context) {
  */
 static void cat_check_ptr_on_init(const void *ptr) {
     if (ptr == NULL) {
-        fprintf(stderr, "%s: Failed on context initialization.\n", CAT_PROGRAME);
+        fprintf(stderr, "%s: Failed on context initialization.\n", CAT_PROGNAME);
         exit(EXIT_FAILURE);
     }
 }
@@ -141,7 +141,7 @@ static void cat_check_ptr_on_init(const void *ptr) {
  */
 static void cat_print_help(void) {
     int i;
-    fprintf(stdout, "%s\n\n", CAT_PROGRAME);
+    fprintf(stdout, "%s\n\n", CAT_PROGNAME);
     fprintf(stdout, "Print and concatenate files.\n");
     for (i = 0; i < CAT_OPTION_COUNT; i++) {
         printf("  %-*s  %-*s  %s\n",
@@ -155,14 +155,14 @@ static void cat_print_help(void) {
  * Prints version information.
  */
 static void cat_print_version(void) {
-    fprintf(stdout, "%s %s\n", CAT_PROGRAME, CAT_VERSION);
+    fprintf(stdout, "%s %s\n", CAT_PROGNAME, CAT_VERSION);
 }
 
 /**
  * Prints if an invalid option is provided.
  */
 static void cat_print_invalid_option(void) {
-    fprintf(stderr, "%s: Invalid option -- '%s'\n", CAT_PROGRAME, invalid_option);
+    fprintf(stderr, "%s: Invalid option -- '%s'\n", CAT_PROGNAME, invalid_option);
     fprintf(stderr, "Try 'cat --help' to get help message.");
 }
 
@@ -225,9 +225,11 @@ static void cat_parse_long_option(struct cat_app_context *ctx, const char *optio
  * @param option Short option(s)
  */
 static void cat_parse_short_option(struct cat_app_context *ctx, const char *option) {
-    int i, j;
-    int valid_op = 0;
-    for (i = 0; i < strlen(option); i++) {
+    size_t i, j;
+    int valid_op;
+    size_t option_len = strlen(option);
+    for (i = 0; i < option_len; i++) {
+        valid_op = 0;
         for (j = 0; j < CAT_OPTION_COUNT; j++) {
             if (option[i] == cat_options[j].shortname[1]) {
                 ctx->option_enabled[j] = true;
@@ -257,11 +259,11 @@ static void cat_process_files(struct cat_app_context *ctx) {
         }
         FILE *fp = fopen(ctx->files[i], "r");
         if (fp == NULL) {
-            fprintf(stderr, "%s: %s: %s\n", CAT_PROGRAME, ctx->files[i], strerror(errno));
+            fprintf(stderr, "%s: %s: %s\n", CAT_PROGNAME, ctx->files[i], strerror(errno));
             continue;
         }
         if (cat_is_directory(ctx->files[i])) {
-            fprintf(stderr, "%s: %s: %s\n", CAT_PROGRAME, ctx->files[i], strerror(EISDIR));
+            fprintf(stderr, "%s: %s: %s\n", CAT_PROGNAME, ctx->files[i], strerror(EISDIR));
             fclose(fp);
             continue;
         }
